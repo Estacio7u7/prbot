@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<robot>
+  <gazebo>
+   <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
+     <legacyMode>false</legacyMode>
+     <alwaysOn>true</alwaysOn>
+     <updateRate>10</updateRate>
+     <leftJoint>left_wheel_hinge</leftJoint>
+     <rightJoint>right_wheel_hinge</rightJoint>
+     <wheelSeparation>0.4</wheelSeparation>
+     <wheelDiameter>0.2</wheelDiameter>
+     <torque>10</torque>
+     <commandTopic>cmd_vel</commandTopic>
+     <odometryTopic>odom</odometryTopic>
+     <odometryFrame>odom</odometryFrame>
+     <robotBaseFrame>chassis</robotBaseFrame>
+   </plugin>
+ </gazebo>
+
+ <gazebo reference="camera_box">
+   <!-- the actual sensor -->
+   <sensor name="front_camera" type="camera">
+     <update_rate>30.0</update_rate>
+     <always_on>1</always_on>
+     <camera name="front_view">
+       <image width="640" height="480" hfov="1.5708" format="R8G8B8" near="0.01" far="50.0"/>
+     </camera>
+     <!-- adding necessary plugins -->
+     <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+       <alwaysOn>true</alwaysOn>
+       <updateRate>0.0</updateRate>
+       <cameraName>prbot/front_camera</cameraName>
+       <imageTopicName>image_raw</imageTopicName>
+       <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+       <frameName>camera_box</frameName>
+       <hackBaseline>0.07</hackBaseline>
+       <distortionK1>0.0</distortionK1>
+       <distortionK2>0.0</distortionK2>
+       <distortionK3>0.0</distortionK3>
+       <distortionT1>0.0</distortionT1>
+       <distortionT2>0.0</distortionT2>
+     </plugin>
+   </sensor>
+ </gazebo>
+
+<gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/</robotNamespace>
+      <legacyModeNS>true</legacyModeNS>
+    </plugin>
+  </gazebo>
+</robot>
