@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <robot name="prbot" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:include filename="$(find prbot_description)/urdf/robot.gazebo" />
 
@@ -9,13 +8,12 @@
   <xacro:property name="body_y" value="0.34852"/>
   <xacro:property name="body_z" value="0.40171"/>
   <xacro:property name="cam_len" value="0.03"/>
-
   <!-- square base for the prbot -->
   <link name="square_base">
     <!-- configure the phisics of the link -->
     <inertial>
       <mass value="5"/>
-      <inertia ixx="0.166667" ixy="0" ixz="0" iyy="0.166667" iyz="0" izz="0.166667"/>
+      <inertia  ixx="0.166667" ixy="0" ixz="0" iyy="0.166667" iyz="0" izz="0.166667"/>
     </inertial>
     <!-- configure the collition box for that link-->
     <collision name="base_collision">
@@ -23,12 +21,29 @@
         <box size="${body_x} ${body_y} ${body_z}"/>
       </geometry>
     </collision>
+
     <!-- configure the visual for the link -->
     <visual name="base_visual">
       <geometry>
         <box size="${body_x} ${body_y} ${body_z}"/>
       </geometry>
     </visual>
+
+    <!-- inside this link there is gonna be the caster_wheel-->
+    <collision name="caster_collision">
+      <origin xyz="${0.5*body_x-wheel_rad} 0 ${-body_z/2}" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="${wheel_rad}"/>
+      </geometry>
+    </collision>
+
+    <visual name="caster_visual">
+      <origin xyz="${0.5*body_x-wheel_rad} 0 ${-body_z/2}" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="${wheel_rad}"/>
+      </geometry>
+    </visual>
+
   </link>
 
   <!-- ################# right wheel #############################-->
@@ -54,6 +69,7 @@
       </geometry>
     </visual>
   </link>
+
   <!--##################### left wheel #########################-->
   <link name="left_wheel">
     <pose xyz="${-0.5*body_x+wheel_rad} ${body_y/2} ${-body_z/2}" rpy="-1.5707 0 0"/>
@@ -78,29 +94,6 @@
     </visual>
   </link>
 
-  <!--##################### caster wheel #########################-->
-  <link name="caster_wheel">
-    <!-- how the wheel should appear -->
-    <pose xyz="${0.5*body_x-wheel_rad} 0 ${-body_z/2}" rpy="0 0 0"/>
-    <!-- configure the inertia of the wheel-->
-    <inertial>
-      <mass value="0.1"/>
-      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0" iyz="0" izz="0.1"/>
-    </inertial>
-    <!-- configure the collision box of the link -->
-    <collision name="caster_collision">
-      <geometry>
-        <sphere radius="${wheel_rad}"/>
-      </geometry>
-    </collision>
-    <!-- configure the visual for the link -->
-    <visual name="caster_visual">
-      <geometry>
-        <sphere radius="${wheel_rad}"/>
-      </geometry>
-    </visual>
-  </link>
-
   <!--##################### camera link #########################-->
   <link name="camera_box">
     <!-- configure the phisics of the link -->
@@ -109,28 +102,30 @@
       <inertia ixx="1.5e-05" ixy="0" ixz="0" iyy="1.5e-05" iyz="0" izz="1.5e-05"/>
     </inertial>
 
-  <!-- configure the collition box for the link-->
-    <collision name="base_collision">
+    <!-- configure the collition box for the link-->
+    <collision name="cam_collision">
       <geometry>
-        <box size="${cam_len} ${cam_len} ${cam_len}"/>
+        <box size="${cam_len} ${3*cam_len} ${cam_len}"/>
       </geometry>
     </collision>
 
     <!-- configure the visual for the link -->
-    <visual name="visual">
+    <visual name="cam_visual">
       <geometry>
-        <box size="${cam_len} ${cam_len} ${cam_len}"/>
+        <box size="${cam_len} ${3*cam_len} ${cam_len}"/>
       </geometry>
-    </visual>
+      </visual>
   </link>
 
   <!--##################### joints #########################-->
   <!-- joints for the two wheels -->
-  <joint name="base2righwheel" type="continuous">
+  <joint name="base2rightwheel" type="continuous">
     <origin xyz="${-body_x/2 + wheel_rad} ${-body_y/2} ${-body_z/2}" rpy= "0 0 0"/>
     <parent link="square_base"/>
     <child link="right_wheel"/>
     <axis xyz="0 1 0"/>
+    <limit effort="10" velocity="6"/>
+    <joint_properties damping="0.0" friction="0.001"/>
   </joint>
 
   <joint name="base2leftwheel" type="continuous">
@@ -138,16 +133,11 @@
     <parent link="square_base"/>
     <child link="left_wheel"/>
     <axis xyz="0 1 0"/>
+    <limit effort="10" velocity="6"/>
+    <joint_properties damping="0.0" friction="0.001"/>
   </joint>
 
-  <!-- for a caster wheel we will add tree continuous joints -->
-  <joint name="base2casterwheelx" type="fixed">
-    <origin rpy= "0 0 0" xyz="${body_x/2 - wheel_rad} 0 ${-body_z/2}"/>
-    <parent link="square_base"/>
-    <child link="caster_wheel"/>
-  </joint>
-
-  <!-- joint to attach the camera link to the body -->
+    <!-- joint to attach the camera link to the body -->
   <joint name="base2camera_box" type="fixed">
     <origin rpy= "0 0 0" xyz="${body_x/2+cam_len/2} 0 0"/>
     <parent link="square_base"/>
